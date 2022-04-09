@@ -10,8 +10,17 @@ def derive(exp):
         # Deriving Constants
         if "x" not in exp:
             return 0
-        print("Deriv Inside:")
-        print(opers, comps)
+        if exp == "x":
+            return 1
+        elif exp[-1] == "x":
+            try:
+                c = int(exp[:-1])
+                return c
+            except:
+                pass
+        # print("Deriv Inside:")
+        # print(opers, comps)
+        ld = []
         # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
         for i in range(len(exp)):
             if i in opers:
@@ -19,41 +28,43 @@ def derive(exp):
                     # Left Side, Right Side
                     ls = exp[opers[i][1]:opers[i][5]]
                     rs = exp[opers[i][5]+1:opers[i][2]+1]
-                    print(ls, rs)
+                    # print(ls, rs)
                     if ls == "x":
                         try:
                             power = int(rs)
                             return "{0}*x^{1}".format(power, power-1)
                         except:
                             return "x^{0}*({1})".format(rs, derive("ln({0})*{1}".format(ls, rs)))
+                if opers[i][0] == "*":
+                    ls = exp[opers[i][1]:opers[i][5]]
+                    rs = exp[opers[i][5]+1:opers[i][2]+1]
+                    if "x" in ls and "x" in rs:
+                        return "{0}*{1}+{2}*{3}".format(ls, derive(rs), derive(ls), rs)
             elif i in comps:
                 inside = comps[i][1][1:-1]
                 if comps[i][0] == "sin":
                     return "cos({0})*{1}".format(inside, derive(inside))
                 elif comps[i][0] == "cos":
-                    return"-sin({0})*{1}".format(inside, derive(inside))
+                    return "-sin({0})*{1}".format(inside, derive(inside))
+                elif comps[i][0] == "ln":
+                    return "{0}*(1/{1})".format(derive(inside), inside)
 
 
 
     else:
         for i in range(len(splitted)):
             derivatives.append(derive(splitted[i][1]))
+        res = "({0}".format(derivatives[0])
+        for k in range(1, len(derivatives)):
+            if derivatives[k] != 0:
+                res = "{0}{1}{2}".format(res, splitted[k][0], derivatives[k])
+        derivatives = "{0})".format(res)
     return derivatives
 
 
 def process(exp):
-    original = "{}".format(exp)
-    bracket_dict = match(exp)
-    complex_fs_dict = complex_functions_parse(exp, bracket_dict)
-    ops_dict = operators(exp, bracket_dict, complex_fs_dict)
-    print(original)
-    print("Operations")
-    print(ops_dict)
-    print("Functions")
-    splitted = split_deriv(exp, bracket_dict)
-    d = derive(exp)
-    print(d)
-    return complex_fs_dict
+    print(exp)
+    return derive(exp)
 
 
 # The purpose of this is to create a dict like the one made for complex functions
@@ -374,9 +385,11 @@ def match(exp):
 
 
 # print(process("-log(32, 100)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
-# print(process("sin(323)*cos(2986)+sin(32)-cos(69)"))
-print(process("sin(x^32)"))
-# print(process("ln(x)+34*cos(x+1)"))
-print(process("x^8"))
-# print(process("8+9-132*34563"))
+print("Derivative:", process("sin(323x)*cos(2986x)+sin(32x)-cos(69x)"))
+print("Derivative:", process("sin(x^32)"))
+print("Derivative:", process("ln(x)+34*cos(x+1)"))
+print("Derivative:", process("x^8"))
+print("Derivative:", process("ln(2x+1)"))
+print("Derivative:", process("ln(x^2+4x+2)"))
+print("Derivative:", process("8+9-132*34563"))
 # print(process(input("")))
