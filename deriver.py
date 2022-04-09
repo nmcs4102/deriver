@@ -40,6 +40,23 @@ def derive(exp):
                     rs = exp[opers[i][5]+1:opers[i][2]+1]
                     if "x" in ls and "x" in rs:
                         return "{0}*{1}+{2}*{3}".format(ls, derive(rs), derive(ls), rs)
+                    elif "x" in rs:
+                        return "{0}*{1}".format(ls, derive(rs))
+                    elif "x" in ls:
+                        return "{0}*{1}".format(rs, derive(ls))
+                    else:
+                        c = eval(exp[opers[i][1]:opers[i][2]+1])
+                if opers[i][0] == "/":
+                    ls = exp[opers[i][1]:opers[i][5]]
+                    rs = exp[opers[i][5]+1:opers[i][2]+1]
+                    if "x" in ls and "x" in rs:
+                        return "({0}*{1}-{2}*{3})/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
+                    elif "x" in rs:
+                        return "{0}*{1}".format(ls, derive(rs))
+                    elif "x" in ls:
+                        return "{0}*{1}".format(rs, derive(ls))
+                    else:
+                        c = eval(exp[opers[i][1]:opers[i][2]+1])
             elif i in comps:
                 inside = comps[i][1][1:-1]
                 if comps[i][0] == "sin":
@@ -392,4 +409,5 @@ print("Derivative:", process("x^8"))
 print("Derivative:", process("ln(2x+1)"))
 print("Derivative:", process("ln(x^2+4x+2)"))
 print("Derivative:", process("8+9-132*34563"))
+print("Derivative:", process("sin(89*x)/cos(78*x^2+2x)"))
 # print(process(input("")))
