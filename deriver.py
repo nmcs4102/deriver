@@ -1,18 +1,58 @@
+import math
+
+def derive(exp):
+    brackets = match(exp)
+    comps = complex_functions_parse(exp, match(exp))
+    opers = operators(exp, match(exp), comps)
+    splitted = split_deriv(exp, match(exp))
+    derivatives = []
+    if len(splitted) == 1:
+        # Deriving Constants
+        if "x" not in exp:
+            return 0
+        print("Deriv Inside:")
+        print(opers, comps)
+        # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
+        for i in range(len(exp)):
+            if i in opers:
+                if opers[i][0] == "^":
+                    # Left Side, Right Side
+                    ls = exp[opers[i][1]:opers[i][5]]
+                    rs = exp[opers[i][5]+1:opers[i][2]+1]
+                    print(ls, rs)
+                    if ls == "x":
+                        try:
+                            power = int(rs)
+                            return "{0}*x^{1}".format(power, power-1)
+                        except:
+                            return "x^{0}*({1})".format(rs, derive("ln({0})*{1}".format(ls, rs)))
+            elif i in comps:
+                inside = comps[i][1][1:-1]
+                if comps[i][0] == "sin":
+                    return "cos({0})*{1}".format(inside, derive(inside))
+                elif comps[i][0] == "cos":
+                    return"-sin({0})*{1}".format(inside, derive(inside))
+
+
+
+    else:
+        for i in range(len(splitted)):
+            derivatives.append(derive(splitted[i][1]))
+    return derivatives
+
+
 def process(exp):
     original = "{}".format(exp)
     bracket_dict = match(exp)
     complex_fs_dict = complex_functions_parse(exp, bracket_dict)
-    # not sure if splitted will actually be useful
-    splitted = split_deriv(exp, bracket_dict)
     ops_dict = operators(exp, bracket_dict, complex_fs_dict)
     print(original)
-    # print("Split")
-    # print(splitted)
-    # print("Brackets")
-    # print(bracket_dict)
     print("Operations")
     print(ops_dict)
     print("Functions")
+    splitted = split_deriv(exp, bracket_dict)
+    d = derive(exp)
+    print(d)
     return complex_fs_dict
 
 
@@ -275,6 +315,7 @@ def split_deriv(exp, brackets_dict):
     prev_ind = 0
     splitted = []
     while i < len(exp):
+        # print(i, exp[i])
         if exp[i] in ["+", "-"]:
             cur = exp[prev_ind:i]
             if cur != "":
@@ -332,8 +373,10 @@ def match(exp):
     return res
 
 
-print(process("-log(32, 100)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
-print(process("sin(323)*cos(2986)+sin(32)-cos(69)"))
-print(process("sin(32^(x+1))"))
-print(process("-ln(x)+34*cos(x+1)"))
-print(process(input("")))
+# print(process("-log(32, 100)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
+# print(process("sin(323)*cos(2986)+sin(32)-cos(69)"))
+print(process("sin(x^32)"))
+# print(process("ln(x)+34*cos(x+1)"))
+print(process("x^8"))
+# print(process("8+9-132*34563"))
+# print(process(input("")))
