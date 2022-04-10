@@ -1,7 +1,4 @@
-import math
-
 def derive(exp):
-    brackets = match(exp)
     comps = complex_functions_parse(exp, match(exp))
     opers = operators(exp, match(exp), comps)
     splitted = split_deriv(exp, match(exp))
@@ -25,10 +22,21 @@ def derive(exp):
         # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
         for i in range(len(exp)):
             if i in opers:
+                ls = exp[opers[i][1]:opers[i][5]]
+                rs = exp[opers[i][5]+1:opers[i][2]+1]
+                if ls[0] == "(" and ls[-1] == ")":
+                    if ls[0] == "(":
+                        ls = ls[1:]
+                    if ls[-1] == ")":
+                        ls = ls[:-1]
+                if rs[0] == "(" and rs[-1] == ")":
+                    if rs[0] == "(":
+                        rs = rs[1:]
+                    if rs[-1] == ")":
+                        rs = rs[:-1]
+                # remove brackets from start and end
                 if opers[i][0] == "^":
                     # Left Side, Right Side
-                    ls = exp[opers[i][1]:opers[i][5]]
-                    rs = exp[opers[i][5]+1:opers[i][2]+1]
                     # print(ls, rs)
                     if ls == "x":
                         try:
@@ -43,8 +51,6 @@ def derive(exp):
                             else:
                                 return "({0})*e^{1}".format(derive(rs[1:-1]), rs)
                 if opers[i][0] == "*":
-                    ls = exp[opers[i][1]:opers[i][5]]
-                    rs = exp[opers[i][5]+1:opers[i][2]+1]
                     if "x" in ls and "x" in rs:
                         return "{0}*{1}+{2}*{3}".format(ls, derive(rs), derive(ls), rs)
                     elif "x" in rs:
@@ -54,8 +60,6 @@ def derive(exp):
                     else:
                         return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
                 if opers[i][0] == "/":
-                    ls = exp[opers[i][1]:opers[i][5]]
-                    rs = exp[opers[i][5]+1:opers[i][2]+1]
                     if "x" in ls and "x" in rs:
                         return "({0}*{1}-{2}*{3})/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
                     # fix these babies
@@ -64,21 +68,21 @@ def derive(exp):
                     elif "x" in ls:
                         return "{0}/{1}".format(derive(ls), rs)
                     else:
-                        return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
+                        return "{0}*{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
             elif i in comps:
                 inside = comps[i][1][1:-1]
+                if "x" not in inside:
+                    return "{0}({1})".format(comps[i][0], inside)
                 if comps[i][0] == "sin":
                     return "cos({0})*{1}".format(inside, derive(inside))
                 elif comps[i][0] == "cos":
                     return "-sin({0})*{1}".format(inside, derive(inside))
                 elif comps[i][0] == "ln":
                     return "{0}*(1/{1})".format(derive(inside), inside)
-
-
-
     else:
-        for i in range(len(splitted)):
-            derivatives.append(derive(splitted[i][1]))
+        # I suspect something is wrong around here
+        for k in range(len(splitted)):
+            derivatives.append(derive(splitted[k][1]))
         res = "({0}".format(derivatives[0])
         for k in range(1, len(derivatives)):
             if derivatives[k] != 0:
@@ -409,16 +413,11 @@ def match(exp):
     return res
 
 
-print(process("-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
-print("Derivative:", process("sin(323x)*cos(2986x)+sin(32x)-cos(69x)"))
-print("Derivative:", process("sin(x^32)"))
-print("Derivative:", process("ln(x)+34*cos(x+1)"))
-print("Derivative:", process("x^8"))
-print("Derivative:", process("ln(2x+1)"))
-print("Derivative:", process("ln(x^2+4x+2)"))
-print("Derivative:", process("8+9-132*34563"))
-print("Derivative:", process("sin(89*x)/cos(78*x^2+2x)"))
-print("Derivative:", process("34*84*34/(sin(x)-1)"))
-print("Derivative:", process("54*e^(x^2+2x)"))
-print("Derivative:", process("x^(1/2)"))
+problems = ["-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
+            "sin(x^32)", "ln(x)+34*cos(x+1)", "x^8", "ln(2x+1)", "ln(x^2+4x+2)", "8+9-132*34563",
+            "sin(89*x)/cos(78*x^2+2x)", "34*84*34/(sin(x)-1)", "54*e^(x^2+2x)", "x^(1/2)", "x+x^(1/2)+x^(1/3)+x^(1/5)",
+            "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))"]
+problems = ["2*sin(x)/(sin(x)-cos(x))"]
+for i in range(len(problems)):
+    print("Derivative:", process(problems[i]))
 # print(process(input("")))
