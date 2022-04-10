@@ -6,6 +6,7 @@ def derive(exp):
     opers = operators(exp, match(exp), comps)
     splitted = split_deriv(exp, match(exp))
     derivatives = []
+    print("Derive: {}".format(exp))
     if len(splitted) == 1:
         # Deriving Constants
         if "x" not in exp:
@@ -35,6 +36,12 @@ def derive(exp):
                             return "{0}*x^{1}".format(power, power-1)
                         except:
                             return "x^{0}*({1})".format(rs, derive("ln({0})*{1}".format(ls, rs)))
+                    if ls == "e":
+                        if "x" in rs:
+                            if rs == "x":
+                                return "e^x"
+                            else:
+                                return "({0})*e^{1}".format(derive(rs[1:-1]), rs)
                 if opers[i][0] == "*":
                     ls = exp[opers[i][1]:opers[i][5]]
                     rs = exp[opers[i][5]+1:opers[i][2]+1]
@@ -45,18 +52,19 @@ def derive(exp):
                     elif "x" in ls:
                         return "{0}*{1}".format(rs, derive(ls))
                     else:
-                        c = eval(exp[opers[i][1]:opers[i][2]+1])
+                        return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
                 if opers[i][0] == "/":
                     ls = exp[opers[i][1]:opers[i][5]]
                     rs = exp[opers[i][5]+1:opers[i][2]+1]
                     if "x" in ls and "x" in rs:
                         return "({0}*{1}-{2}*{3})/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
+                    # fix these babies
                     elif "x" in rs:
-                        return "{0}*{1}".format(ls, derive(rs))
+                        return "-{0}*{1}/({2})^2".format(ls, derive(rs), rs)
                     elif "x" in ls:
-                        return "{0}*{1}".format(rs, derive(ls))
+                        return "{0}/{1}".format(derive(ls), rs)
                     else:
-                        c = eval(exp[opers[i][1]:opers[i][2]+1])
+                        return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
             elif i in comps:
                 inside = comps[i][1][1:-1]
                 if comps[i][0] == "sin":
@@ -401,7 +409,7 @@ def match(exp):
     return res
 
 
-# print(process("-log(32, 100)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
+print(process("-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)"))
 print("Derivative:", process("sin(323x)*cos(2986x)+sin(32x)-cos(69x)"))
 print("Derivative:", process("sin(x^32)"))
 print("Derivative:", process("ln(x)+34*cos(x+1)"))
@@ -410,4 +418,7 @@ print("Derivative:", process("ln(2x+1)"))
 print("Derivative:", process("ln(x^2+4x+2)"))
 print("Derivative:", process("8+9-132*34563"))
 print("Derivative:", process("sin(89*x)/cos(78*x^2+2x)"))
+print("Derivative:", process("34*84*34/(sin(x)-1)"))
+print("Derivative:", process("54*e^(x^2+2x)"))
+print("Derivative:", process("x^(1/2)"))
 # print(process(input("")))
