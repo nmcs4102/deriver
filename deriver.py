@@ -24,16 +24,17 @@ def derive(exp):
             if i in opers:
                 ls = exp[opers[i][1]:opers[i][5]]
                 rs = exp[opers[i][5]+1:opers[i][2]+1]
-                if ls[0] == "(" and ls[-1] == ")":
-                    if ls[0] == "(":
-                        ls = ls[1:]
-                    if ls[-1] == ")":
-                        ls = ls[:-1]
-                if rs[0] == "(" and rs[-1] == ")":
-                    if rs[0] == "(":
-                        rs = rs[1:]
-                    if rs[-1] == ")":
-                        rs = rs[:-1]
+                if len(match(exp)) == 2:
+                    if ls[0] == "(" and ls[-1] == ")":
+                        if ls[0] == "(":
+                            ls = ls[1:]
+                        if ls[-1] == ")":
+                            ls = ls[:-1]
+                    if rs[0] == "(" and rs[-1] == ")":
+                        if rs[0] == "(":
+                            rs = rs[1:]
+                        if rs[-1] == ")":
+                            rs = rs[:-1]
                 # remove brackets from start and end
                 if opers[i][0] == "^":
                     # Left Side, Right Side
@@ -41,15 +42,32 @@ def derive(exp):
                     if ls == "x":
                         try:
                             power = int(rs)
-                            return "{0}*x^{1}".format(power, power-1)
+                            return "{0}*x^({1})".format(power, power-1)
                         except:
-                            return "x^{0}*({1})".format(rs, derive("ln({0})*{1}".format(ls, rs)))
+                            return "x^({0})*{1}".format(rs, derive("ln({0})*{1}".format(ls, rs)))
                     if ls == "e":
                         if "x" in rs:
                             if rs == "x":
                                 return "e^x"
                             else:
-                                return "({0})*e^{1}".format(derive(rs[1:-1]), rs)
+                                return "({0})*e^({1})".format(derive(rs[1:-1]), rs)
+                    else:
+                        try:
+                            c = int(ls)
+                            return "ln({0})*({1})".format(c, exp)
+                        except:
+                            if "x" in rs or "x" in ls:
+                                if "x" in rs and "x" in ls:
+                                    return "{0}*{1}".format(exp, derive("ln({0})*{1}".format(ls, rs)))
+                                elif "x" in ls:
+                                    try:
+                                        power = int(rs)
+                                        return "{0}*({1})^({2})*{3}".format(power, ls, power-1, derive(ls))
+                                    except:
+                                        pass
+                                # Not coded: constant to the power of function (might be already performed by line 57?)
+
+
                 if opers[i][0] == "*":
                     if "x" in ls and "x" in rs:
                         return "{0}*{1}+{2}*{3}".format(ls, derive(rs), derive(ls), rs)
@@ -69,7 +87,7 @@ def derive(exp):
                         return "{0}/{1}".format(derive(ls), rs)
                     else:
                         return "{0}*{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
-            elif i in comps:
+            if i in comps:
                 inside = comps[i][1][1:-1]
                 if "x" not in inside:
                     return "{0}({1})".format(comps[i][0], inside)
@@ -78,7 +96,7 @@ def derive(exp):
                 elif comps[i][0] == "cos":
                     return "-sin({0})*{1}".format(inside, derive(inside))
                 elif comps[i][0] == "ln":
-                    return "{0}*(1/{1})".format(derive(inside), inside)
+                    return "{0}*(1/({1}))".format(derive(inside), inside)
     else:
         # I suspect something is wrong around here
         for k in range(len(splitted)):
@@ -88,6 +106,8 @@ def derive(exp):
             if derivatives[k] != 0:
                 res = "{0}{1}{2}".format(res, splitted[k][0], derivatives[k])
         derivatives = "{0})".format(res)
+    if derivatives == []:
+        print("nullres error:", exp)
     return derivatives
 
 
@@ -413,11 +433,22 @@ def match(exp):
     return res
 
 
-problems = ["-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
+problems_old = ["-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
             "sin(x^32)", "ln(x)+34*cos(x+1)", "x^8", "ln(2x+1)", "ln(x^2+4x+2)", "8+9-132*34563",
             "sin(89*x)/cos(78*x^2+2x)", "34*84*34/(sin(x)-1)", "54*e^(x^2+2x)", "x^(1/2)", "x+x^(1/2)+x^(1/3)+x^(1/5)",
-            "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))"]
-problems = ["2*sin(x)/(sin(x)-cos(x))"]
-for i in range(len(problems)):
-    print("Derivative:", process(problems[i]))
+            "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))", "x^2*e^x*sin(x)", "625*x^10", "e^(x^(1/2))*(x^2-1)^(1/2)",
+            "e^(x^(1/2))*(x^2-1)^(1/2)", "x^4*ln(x)", "2^x*4*cos(x)"]
+# Don't give problems where xes are not multiplied together normally
+problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(-5)+2*x^(-2)", "6*x^(1/3)",
+                "(3*x^4*x^(1/2))/(-x^(3/2))+x^(5/4)*2*x^3", "(x^5+3x)*sin(x)", "2^x*4*cos(x)",
+                "(-2*sin(x)+5*x^(1/3))/(5*3^x)", "3*x^(-3)*ln(x)*3^x", "sin(x^4)", "cos(2^x)",
+                "(x^5-2*x^2+3*x+5)^11", "sin(5*x^2)*4^x", "3^(x^3-4*x+2)*5^(5*x+3)",
+                "(5*x^4-x^2+10*x)^(1/3)+(2*x+3)^10*cos(x^2)", "(sin(5*x+1))^8", "e^((cos(x))^3)",
+                "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))"]
+# 1 C, 2 C, 3 F, 4 F (potential over-derive), 5 C, 8 F (holy heck), 9 F (close), 11 C, 12 C,
+# 14 F (under-derive), 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
+# 21 F (almost (constant *4 disappeared?)), 22  F ( Anomaly) "x^2*e^(-x^2)", 23 C
+for i in range(len(problems_mvp)):
+    print("Derivative:", process(problems_mvp[i]))
 # print(process(input("")))
+# This baby does 9/19 MVP
