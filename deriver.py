@@ -1,9 +1,9 @@
 def derive(exp):
+    splitted = split_deriv(exp, match(exp))
     comps = complex_functions_parse(exp, match(exp))
     opers = operators(exp, match(exp), comps)
-    splitted = split_deriv(exp, match(exp))
     derivatives = []
-    print("Derive: {}".format(exp))
+    # print("Derive: {}".format(exp))
     if len(splitted) == 1:
         # Deriving Constants
         if "x" not in exp:
@@ -22,6 +22,7 @@ def derive(exp):
         # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
         for i in range(len(exp)):
             if i in opers:
+                # print("True")
                 ls = exp[opers[i][1]:opers[i][5]]
                 rs = exp[opers[i][5]+1:opers[i][2]+1]
                 if len(match(exp)) == 2:
@@ -54,7 +55,7 @@ def derive(exp):
                     else:
                         try:
                             c = int(ls)
-                            return "ln({0})*({1})".format(c, exp)
+                            return "ln({0})*({1})*{2}".format(c, exp, derive(rs))
                         except:
                             if "x" in rs or "x" in ls:
                                 if "x" in rs and "x" in ls:
@@ -66,9 +67,8 @@ def derive(exp):
                                     except:
                                         pass
                                 # Not coded: constant to the power of function (might be already performed by line 57?)
-
-
                 if opers[i][0] == "*":
+                    # print("*", exp)
                     if "x" in ls and "x" in rs:
                         return "{0}*{1}+{2}*{3}".format(ls, derive(rs), derive(ls), rs)
                     elif "x" in rs:
@@ -374,6 +374,11 @@ def split_deriv(exp, brackets_dict):
     po = 0
     prev_ind = 0
     splitted = []
+    # print(exp)
+    if len(brackets_dict) == 2:
+        if exp[0] == "(" and exp[-1] == ")":
+            exp = exp[1:-1]
+            brackets_dict = match(exp)
     while i < len(exp):
         # print(i, exp[i])
         if exp[i] in ["+", "-"]:
@@ -396,6 +401,7 @@ def split_deriv(exp, brackets_dict):
         splitted.append(["+", exp[prev_ind:i]])
     else:
         splitted.append(["-", exp[prev_ind:i]])
+    # print(splitted)
     return splitted
 
 
@@ -434,21 +440,23 @@ def match(exp):
 
 
 problems_old = ["-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
-            "sin(x^32)", "ln(x)+34*cos(x+1)", "x^8", "ln(2x+1)", "ln(x^2+4x+2)", "8+9-132*34563",
-            "sin(89*x)/cos(78*x^2+2x)", "34*84*34/(sin(x)-1)", "54*e^(x^2+2x)", "x^(1/2)", "x+x^(1/2)+x^(1/3)+x^(1/5)",
-            "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))", "x^2*e^x*sin(x)", "625*x^10", "e^(x^(1/2))*(x^2-1)^(1/2)",
-            "e^(x^(1/2))*(x^2-1)^(1/2)", "x^4*ln(x)", "2^x*4*cos(x)"]
+                "sin(x^32)", "ln(x)+34*cos(x+1)", "x^8", "ln(2x+1)", "ln(x^2+4x+2)", "8+9-132*34563",
+                "sin(89*x)/cos(78*x^2+2x)", "34*84*34/(sin(x)-1)", "54*e^(x^2+2x)", "x^(1/2)",
+                "x+x^(1/2)+x^(1/3)+x^(1/5)", "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))", "x^2*e^x*sin(x)", "625*x^10",
+                "e^(x^(1/2))*(x^2-1)^(1/2)", "e^(x^(1/2))*(x^2-1)^(1/2)", "x^4*ln(x)", "2^x*4*cos(x)"]
 # Don't give problems where xes are not multiplied together normally
-problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(-5)+2*x^(-2)", "6*x^(1/3)",
-                "(3*x^4*x^(1/2))/(-x^(3/2))+x^(5/4)*2*x^3", "(x^5+3x)*sin(x)", "2^x*4*cos(x)",
+problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(-5)+2*x^(-2)",
+                "-3*x^3+x^(5/4)*2*x^3", "(x^5+3x)*sin(x)", "2^x*4*cos(x)",
                 "(-2*sin(x)+5*x^(1/3))/(5*3^x)", "3*x^(-3)*ln(x)*3^x", "sin(x^4)", "cos(2^x)",
                 "(x^5-2*x^2+3*x+5)^11", "sin(5*x^2)*4^x", "3^(x^3-4*x+2)*5^(5*x+3)",
                 "(5*x^4-x^2+10*x)^(1/3)+(2*x+3)^10*cos(x^2)", "(sin(5*x+1))^8", "e^((cos(x))^3)",
                 "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))"]
-# 1 C, 2 C, 3 F, 4 F (potential over-derive), 5 C, 8 F (holy heck), 9 F (close), 11 C, 12 C,
-# 14 F (under-derive), 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
-# 21 F (almost (constant *4 disappeared?)), 22  F ( Anomaly) "x^2*e^(-x^2)", 23 C
+problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23]
+# 1 C, 2 C, 3 F (- instead of +), 4 C, 5 C, 8 F (holy heck), 9 F (close), 11 C, 12 C,
+# 14 C, 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
+# 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C
 for i in range(len(problems_mvp)):
-    print("Derivative:", process(problems_mvp[i]))
+    print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
+# print("Derivative:", process("x^3/(ln(x^2))"))
 # print(process(input("")))
-# This baby does 9/19 MVP
+# This baby does 12.5/18 MVP
