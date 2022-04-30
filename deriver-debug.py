@@ -48,7 +48,7 @@ def derive(exp):
                         try:
                             power = int(rs)
                             print("Type D")
-                            return "{0}*x^({1})".format(power, power-1)
+                            return "({0})*x^({1})".format(power, power-1)
                         except:
                             print("Type E")
                             return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
@@ -74,7 +74,7 @@ def derive(exp):
                                     try:
                                         power = int(rs)
                                         print("Type J")
-                                        return "{0}*({1})^({2})*{3}".format(power, ls, power-1, derive(ls))
+                                        return "({0})*({1})^({2})*{3}".format(power, ls, power-1, derive(ls))
                                     except:
                                         pass
                                 # Not coded: constant to the power of function (might be already performed by line 57?)
@@ -85,27 +85,27 @@ def derive(exp):
                         return "({0})*({1})+({2})*({3})".format(ls, derive(rs), derive(ls), rs)
                     elif "x" in rs:
                         print("Type L")
-                        return "{0}*{1}".format(ls, derive(rs))
+                        return "({0})*({1})".format(ls, derive(rs))
                     elif "x" in ls:
                         print("Type M")
-                        return "{0}*{1}".format(rs, derive(ls))
+                        return "({0})*({1})".format(rs, derive(ls))
                     else:
                         print("Type N")
                         return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
                 if opers[i][0] == "/":
                     if "x" in ls and "x" in rs:
                         print("Type O")
-                        return "({0}*{1}-{2}*{3})/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
+                        return "(({0})*({1})-({2})*({3}))/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
                     # fix these babies
                     elif "x" in rs:
                         print("Type P")
-                        return "-{0}*{1}/({2})^2".format(ls, derive(rs), rs)
+                        return "-(({0})*({1}))/({2})^2".format(ls, derive(rs), rs)
                     elif "x" in ls:
                         print("Type Q")
-                        return "{0}/{1}".format(derive(ls), rs)
+                        return "({0})/({1})".format(derive(ls), rs)
                     else:
                         print("Type R")
-                        return "{0}*{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
+                        return "({0})*({1})".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
             if i in comps:
                 inside = comps[i][1][1:-1]
                 if "x" not in inside:
@@ -113,10 +113,10 @@ def derive(exp):
                     return "{0}({1})".format(comps[i][0], inside)
                 if comps[i][0] == "sin":
                     print("Type T")
-                    return "cos({0})*{1}".format(inside, derive(inside))
+                    return "cos({0})*({1})".format(inside, derive(inside))
                 elif comps[i][0] == "cos":
                     print("Type U")
-                    return "-sin({0})*{1}".format(inside, derive(inside))
+                    return "-sin({0})*({1})".format(inside, derive(inside))
                 elif comps[i][0] == "ln":
                     print("Type V")
                     return "{0}*(1/({1}))".format(derive(inside), inside)
@@ -491,7 +491,7 @@ problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(
                 "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))", "sin(x)/cos(x)",
                 "sin(e^x)+cos(ln(x))"]
 problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, "B", "D10"]
-# 1 C, 2 C, 3 F (- instead of +), 4 C, 5 C, 8 F (holy heck), 9 F (close), 11 C, 12 C,
+# 1 C, 2 C, 3 F (- instead of +), 4 C, 5 C, 8 F (underderived), 9 C, 11 C, 12 C,
 # 14 C, 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
 # 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
 #for i in range(len(problems_mvp)):
