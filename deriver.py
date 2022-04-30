@@ -8,7 +8,7 @@ def derive(exp):
         # Deriving Constants
         if "x" not in exp:
             return 0
-        if exp == "x":
+        if exp in ["x", "(x)"]:
             return 1
         elif exp[-1] == "x":
             try:
@@ -45,7 +45,7 @@ def derive(exp):
                             power = int(rs)
                             return "{0}*x^({1})".format(power, power-1)
                         except:
-                            return "x^({0})*{1}".format(rs, derive("ln({0})*{1}".format(ls, rs)))
+                            return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
                     if ls == "e":
                         if "x" in rs:
                             if rs == "x":
@@ -59,7 +59,7 @@ def derive(exp):
                         except:
                             if "x" in rs or "x" in ls:
                                 if "x" in rs and "x" in ls:
-                                    return "{0}*{1}".format(exp, derive("ln({0})*{1}".format(ls, rs)))
+                                    return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
                                 elif "x" in ls:
                                     try:
                                         power = int(rs)
@@ -99,6 +99,14 @@ def derive(exp):
                     return "{0}*(1/({1}))".format(derive(inside), inside)
                 elif comps[i][0] == "tan":
                     return "((1/((cos({0}))^2))*{1}".format(inside, derive(inside))
+                elif comps[i][0] == "cot":
+                    return "((1/((sin({0}))^2))*{1}".format(inside, derive(inside))
+                elif comps[i][0] == "arcsin":
+                    return "({0})/((1-({1})^2)^(1/2))".format(derive(inside), inside)
+                elif comps[i][0] == "arccos":
+                    return "-({0})/((1-({1})^2)^(1/2))".format(derive(inside), inside)
+                elif comps[i][0] == "arctan":
+                    return "({0})/(({1})^2+1)".format(derive(inside), inside)
     else:
         # I suspect something is wrong around here
         for k in range(len(splitted)):
@@ -441,15 +449,15 @@ def match(exp):
     return res
 
 
-problems_old = ["-ln(x+1)*(32313-132131)/((sin(1313)+42-cos(49x)*327)+8)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
+problems_old = ["-ln(x+1)*(32313x-132131)/((sin(1313x)+42-cos(49x)*327x)+8x)", "sin(323x)*cos(2986x)+sin(32x)-cos(69x)",
                 "sin(x^32)", "ln(x)+34*cos(x+1)", "x^8", "ln(2x+1)", "ln(x^2+4x+2)", "8+9-132*34563",
                 "sin(89*x)/cos(78*x^2+2x)", "34*84*34/(sin(x)-1)", "54*e^(x^2+2x)", "x^(1/2)",
                 "x+x^(1/2)+x^(1/3)+x^(1/5)", "x*ln(x)", "2*sin(x)/(sin(x)-cos(x))", "x^2*e^x*sin(x)", "625*x^10",
                 "e^(x^(1/2))*(x^2-1)^(1/2)", "e^(x^(1/2))*(x^2-1)^(1/2)", "x^4*ln(x)", "2^x*4*cos(x)"]
 # Don't give problems where xes are not multiplied together normally
 problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(-5)+2*x^(-2)",
-                "-3*x^3+x^(5/4)*2*x^3", "(x^5+3x)*sin(x)", "2^x*4*cos(x)",
-                "(-2*sin(x)+5*x^(1/3))/(5*3^x)", "3*x^(-3)*ln(x)*3^x", "sin(x^4)", "cos(2^x)",
+                "-3*x^3+(x^(5/4))*(2*x^3)", "(x^5+3x)*sin(x)", "2^x*4*cos(x)",
+                "(2*sin(x)+5*x^(1/3))/(5*3^x)", "3*x^(-3)*ln(x)*3^x", "sin(x^4)", "cos(2^x)",
                 "(x^5-2*x^2+3*x+5)^11", "sin(5*x^2)*4^x", "3^(x^3-4*x+2)*5^(5*x+3)",
                 "(5*x^4-x^2+10*x)^(1/3)+(2*x+3)^10*cos(x^2)", "(sin(5*x+1))^8", "e^((cos(x))^3)",
                 "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))", "sin(x)/cos(x)",
@@ -458,8 +466,9 @@ problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, 
 # 1 C, 2 C, 3 F (- instead of +), 4 C, 5 C, 8 F (holy heck), 9 F (close), 11 C, 12 C,
 # 14 C, 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
 # 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
-for i in range(len(problems_mvp)):
-    print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
+#for i in range(len(problems_mvp)):
+    # print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
+print("Derivative:", process("(2*sin(x)+5*x^(1/3))*(5*3^x)"))
 # print("Derivative:", process("x^3/(ln(x^2))"))
 # print(process(input("")))
 # This baby does 12.5/18 MVP
