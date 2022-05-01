@@ -109,6 +109,9 @@ def derive(exp):
                     return "{0}({1})/((1-({2})^2)^(1/2))".format(le_inverse, derive(inside), inside)
                 elif comps[i][0] == "arctan":
                     return "{0}({1})/(({2})^2+1)".format(le_finale, derive(inside), inside)
+                elif comps[i][0] == "log":
+                    args = inside.split(",")
+                    return "{0}{1}".format(le_finale, derive("(ln({0}))/(ln({1}))".format(args[1], args[0])))
     else:
         for k in range(len(splitted)):
             derivatives.append(derive(splitted[k][1]))
@@ -396,23 +399,17 @@ def split_deriv(exp, brackets_dict):
 
 
 def complex_functions_parse(exp, brackets_dict):
-    processed_fs_dict = {}
-    i = 0
+    p_dict, res, i = brackets_dict, {}, 0
     while i < len(exp):
-        if exp[i] in ["c", "s", "l", "t"]:
-            cur = exp[i:i+3]
-            if cur[-1] in ["s", "n", "t", "g"]:
-                args = exp[i+3:brackets_dict[i+3]+1]
-                processed_fs_dict[i] = [cur, args, brackets_dict[i+3]]
-                processed_fs_dict[brackets_dict[i+3]] = [cur, args, i]
-                i += 2
-            else:
-                args = exp[i+2:brackets_dict[i+2]+1]
-                processed_fs_dict[i] = [cur[:-1], args, brackets_dict[i+2]]
-                processed_fs_dict[brackets_dict[i+2]] = [cur[:-1], args, i]
-                i += 1
+        if exp[i] in ["a", "c", "l", "s", "t"]:
+            for k in range(2, 7):
+                if exp[i:i + k] in ["sin", "cos", "tan", "ln", "log", "arcsin", "arccos", "arctan"]:
+                    res[i] = [exp[i:(i + k)], exp[i + k:p_dict[i + k]+1], p_dict[i + k]]
+                    res[p_dict[i + k]] = [exp[i:(i + k)], exp[i + k:p_dict[i + k]+1], i]
+                    i += k
+                    break
         i += 1
-    return processed_fs_dict
+    return res
 
 
 def match(exp):

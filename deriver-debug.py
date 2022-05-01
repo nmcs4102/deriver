@@ -34,6 +34,7 @@ def derive(exp):
         # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
         for i in range(len(exp)):
             print(i)
+            print(opers)
             if i in opers:
                 # print("True")
                 ls = exp[opers[i][1]:opers[i][5]]
@@ -153,6 +154,11 @@ def derive(exp):
                 elif comps[i][0] == "arctan":
                     print("Type Z+")
                     return "{0}({1})/(({2})^2+1)".format(le_finale, derive(inside), inside)
+                elif comps[i][0] == "log":
+                    print(inside)
+                    args = inside.split(",")
+                    print(args)
+                    return "{0}{1}".format(le_finale, derive("(ln({0}))/(ln({1}))".format(args[1], args[0])))
     else:
         # I suspect something is wrong around here
         for k in range(len(splitted)):
@@ -465,23 +471,18 @@ def split_deriv(exp, brackets_dict):
 
 # parses trig functions as well as logarithms, returned dict gives you the function that starts/ends at certain index
 def complex_functions_parse(exp, brackets_dict):
-    processed_fs_dict = {}
-    i = 0
+    p_dict, res, i = brackets_dict, {}, 0
     while i < len(exp):
-        if exp[i] in ["c", "s", "l", "t"]:
-            cur = exp[i:i+3]
-            if cur[-1] in ["s", "n", "t", "g"]:
-                args = exp[i+3:brackets_dict[i+3]+1]
-                processed_fs_dict[i] = [cur, args, brackets_dict[i+3]]
-                processed_fs_dict[brackets_dict[i+3]] = [cur, args, i]
-                i += 2
-            else:
-                args = exp[i+2:brackets_dict[i+2]+1]
-                processed_fs_dict[i] = [cur[:-1], args, brackets_dict[i+2]]
-                processed_fs_dict[brackets_dict[i+2]] = [cur[:-1], args, i]
-                i += 1
+        if exp[i] in ["a", "c", "l", "s", "t"]:
+            for k in range(2, 7):
+                if exp[i:i + k] in ["sin", "cos", "tan", "ln", "log", "arcsin", "arccos", "arctan"]:
+                    res[i] = [exp[i:(i + k)], exp[i + k:p_dict[i + k]+1], p_dict[i + k]]
+                    res[p_dict[i + k]] = [exp[i:(i + k)], exp[i + k:p_dict[i + k]+1], i]
+                    i += k
+                    break
         i += 1
-    return processed_fs_dict
+    print(res)
+    return res
 
 
 def match(exp):
