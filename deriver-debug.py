@@ -8,13 +8,19 @@ def derive(exp):
         return derive(exp[1:-1])
     # print("Derive: {}".format(exp))
     if len(splitted) == 1:
+        le_finale = ""
+        le_inverse = "-"
+        if splitted[0][0] == "-":
+            le_finale = "-"
+            le_inverse = ""
         # Deriving Constants
         if "x" not in exp:
             print("Type A")
             return 0
-        if exp in ["x", "(x)"]:
+        if exp in ["x", "(x)", "-x"]:
             print("Type B")
-            return 1
+            return "{}1".format(le_finale)
+        # Looks like a bad idea?? IDK
         elif exp[-1] == "x":
             try:
                 c = int(exp[:-1])
@@ -54,100 +60,99 @@ def derive(exp):
                             power = int(rs)
                             print(opers)
                             print("Type D", rs)
-                            return "({0})*x^({1})".format(power, power-1)
+                            return "{0}({1})*x^({2})".format(le_finale, power, power-1)
                         except:
                             print("Type E")
-                            return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
+                            return "{0}({1})^({2})*({3})".format(le_finale, ls, rs, derive("ln({0})*({1})".format(ls, rs)))
                     elif ls == "e":
                         if "x" in rs:
                             if rs == "x":
                                 print("Type F")
-                                return "e^x"
+                                return "{}e^x".format(le_finale)
                             else:
                                 print("Type G+")
-                                return "({0})*e^({1})".format(derive(rs), rs)
+                                return "{0}({1})*e^({2})".format(le_finale, derive(rs), rs)
                     else:
                         try:
                             c = int(ls)
                             print("Type H")
-                            return "ln({0})*({1})*{2}".format(c, exp, derive(rs))
+                            return "{0}ln({1})*({2})*{3}".format(le_finale, c, exp, derive(rs))
                         except:
                             if "x" in rs or "x" in ls:
                                 print("Bingo")
                                 if "x" in rs and "x" in ls:
                                     print("Type I")
-                                    return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
+                                    return "{0}({1})^({2})*({3})".format(le_finale, ls, rs, derive("ln({0})*({1})".format(ls, rs)))
                                 elif "x" in ls:
                                     try:
                                         power = int(rs)
                                         print("Type J")
-                                        return "({0})*({1})^({2})*{3}".format(power, ls, power-1, derive(ls))
+                                        return "{0}({1})*({2})^({3})*{4}".format(le_finale, power, ls, power-1, derive(ls))
                                     except:
                                         # Type J+ is a fractional power with no weird things going on (eg. ...^(1/3))
                                         print("Type J+")
                                         f_parts = list(map(int, rs[1:-1].split("/")))
                                         f_new = f_parts[0]-f_parts[1]
-                                        return "({0}/{1})*({2})^({3}/{4})*({5})".format(f_parts[0], f_parts[1], ls,
+                                        return "{0}({1}/{2})*({3})^({4}/{5})*({6})".format(le_finale, f_parts[0], f_parts[1], ls,
                                                                                         f_new, f_parts[1], derive(ls))
-                                        pass
                                 # Not coded: constant to the power of function (might be already performed by line 57?)
                 if opers[i][0] == "*":
                     # print("*", exp)
                     if "x" in ls and "x" in rs:
                         print("Type K")
-                        return "({0})*({1})+({2})*({3})".format(ls, derive(rs), derive(ls), rs)
+                        return "{0}({1})*({2})+({3})*({4})".format(le_finale, ls, derive(rs), derive(ls), rs)
                     elif "x" in rs:
                         print("Type L")
-                        return "({0})*({1})".format(ls, derive(rs))
+                        return "{0}({1})*({2})".format(le_finale, ls, derive(rs))
                     elif "x" in ls:
                         print("Type M")
-                        return "({0})*({1})".format(rs, derive(ls))
+                        return "{0}({1})*({2})".format(le_finale, rs, derive(ls))
                     else:
                         print("Type N")
-                        return "{0}{1}".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
+                        return "{0}{1}{2}".format(le_finale, str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
                 if opers[i][0] == "/":
                     if "x" in ls and "x" in rs:
                         print("Type O")
-                        return "(({0})*({1})-({2})*({3}))/({4})^2".format(derive(ls), rs, ls, derive(rs), rs)
-                    # fix these babies
+                        return "{0}(({1})*({2})-({3})*({4}))/({5})^2".format(le_finale, derive(ls), rs, ls, derive(rs), rs)
+                    # This baby doesn't have le_finale
                     elif "x" in rs:
                         print("Type P")
-                        return "-(({0})*({1}))/({2})^2".format(ls, derive(rs), rs)
+                        return "{0}(({1})*({2}))/({3})^2".format(le_inverse, ls, derive(rs), rs)
                     elif "x" in ls:
                         print("Type Q")
-                        return "({0})/({1})".format(derive(ls), rs)
+                        return "{0}({1})/({2})".format(le_finale, derive(ls), rs)
                     else:
                         print("Type R")
-                        return "({0})*({1})".format(str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
+                        return "{0}({1})*({2})".format(le_finale, str(eval(exp[opers[i][1]:opers[i][2]+1])), exp[opers[i][2]+1:])
             if i in comps:
                 inside = comps[i][1][1:-1]
                 if "x" not in inside:
                     print("Type S")
-                    return "{0}({1})".format(comps[i][0], inside)
+                    return "{0}{1}({2})".format(le_finale, comps[i][0], inside)
                 if comps[i][0] == "sin":
                     print("Type T")
-                    return "cos({0})*({1})".format(inside, derive(inside))
+                    return "{0}cos({1})*({2})".format(le_finale, inside, derive(inside))
                 elif comps[i][0] == "cos":
                     print("Type U")
-                    return "-sin({0})*({1})".format(inside, derive(inside))
+                    return "{0}sin({1})*({2})".format(le_inverse, inside, derive(inside))
                 elif comps[i][0] == "ln":
                     print("Type V")
-                    return "{0}*(1/({1}))".format(derive(inside), inside)
+                    return "{0}{1}*(1/({2}))".format(le_finale, derive(inside), inside)
                 elif comps[i][0] == "tan":
                     print("Type W")
-                    return "((1/((cos({0}))^2))*{1}".format(inside, derive(inside))
+                    return "{0}((1/((cos({1}))^2))*{2}".format(le_finale, inside, derive(inside))
                 elif comps[i][0] == "cot":
                     print("Type X")
-                    return "((1/((sin({0}))^2))*{1}".format(inside, derive(inside))
+                    return "{0}((1/((sin({1}))^2))*{2}".format(le_finale, inside, derive(inside))
                 elif comps[i][0] == "arcsin":
                     print("Type Y")
-                    return "({0})/((1-({1})^2)^(1/2))".format(derive(inside), inside)
+                    return "{0}({1})/((1-({2})^2)^(1/2))".format(le_finale,derive(inside), inside)
                 elif comps[i][0] == "arccos":
                     print("Type Z")
-                    return "-({0})/((1-({1})^2)^(1/2))".format(derive(inside), inside)
+                    return "{0}({1})/((1-({2})^2)^(1/2))".format(le_inverse, derive(inside), inside)
                 elif comps[i][0] == "arctan":
                     print("Type Z+")
-                    return "({0})/(({1})^2+1)".format(derive(inside), inside)
+                    return "{0}({1})/(({2})^2+1)".format(le_finale, derive(inside), inside)
     else:
         # I suspect something is wrong around here
         for k in range(len(splitted)):
@@ -503,15 +508,14 @@ problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(
                 "(2*sin(x)+5*x^(1/3))/(5*3^x)", "3*x^(-3)*ln(x)*3^x", "sin(x^4)", "cos(2^x)",
                 "(x^5-2*x^2+3*x+5)^11", "sin(5*x^2)*4^x", "3^(x^3-4*x+2)*5^(5*x+3)",
                 "(5*x^4-x^2+10*x)^(1/3)+(2*x+3)^10*cos(x^2)", "(sin(5*x+1))^8", "e^((cos(x))^3)",
-                "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))", "sin(x)/cos(x)",
+                "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^2*e^(-x^2)", "x^3/(ln(x^2))", "sin(x)/cos(x)",
                 "sin(e^x)+cos(ln(x))"]
 problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, "B", "D10"]
 # 1 C, 2 C, 3 C, 4 C, 5 C, 8 C, 9 C, 11 C, 12 C,
 # 14 C, 15 C, 16 C, 17 C, 18 C, 19 C, 20 C,
-# 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
-for i in range(len(problems_mvp)):
-    print(problem_ids[i])
-    print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
+# 21 C, 22  C (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
+for i in range(len(problems_old)):
+    print(i, "Derivative:", process(problems_old[i]))
 # print("Derivative:", process("(2*sin(x)+5*x^(1/3))*(5*3^x)"))
 # print("Derivative:", process("x^3/(ln(x^2))"))
 # print(process(input("")))
