@@ -4,6 +4,8 @@ def derive(exp):
     comps = complex_functions_parse(exp, match(exp))
     opers = operators(exp, match(exp), comps)
     derivatives = []
+    if (exp[0] == "(" and exp[-1] == ")") and (match(exp)[0] == len(exp)-1):
+        return derive(exp[1:-1])
     # print("Derive: {}".format(exp))
     if len(splitted) == 1:
         # Deriving Constants
@@ -25,10 +27,12 @@ def derive(exp):
         ld = []
         # What we know about stuff that made it this far: 1. Is connected to X 2. wkrn
         for i in range(len(exp)):
+            print(i)
             if i in opers:
                 # print("True")
                 ls = exp[opers[i][1]:opers[i][5]]
                 rs = exp[opers[i][5]+1:opers[i][2]+1]
+                # Brackets could be changed to remove redundant better (like in rewrite)
                 if len(match(exp)) == 2:
                     if ls[0] == "(" and ls[-1] == ")":
                         if ls[0] == "(":
@@ -47,12 +51,13 @@ def derive(exp):
                     if ls == "x":
                         try:
                             power = int(rs)
-                            print("Type D")
+                            print(opers)
+                            print("Type D", rs)
                             return "({0})*x^({1})".format(power, power-1)
                         except:
                             print("Type E")
                             return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
-                    if ls == "e":
+                    elif ls == "e":
                         if "x" in rs:
                             if rs == "x":
                                 print("Type F")
@@ -67,6 +72,7 @@ def derive(exp):
                             return "ln({0})*({1})*{2}".format(c, exp, derive(rs))
                         except:
                             if "x" in rs or "x" in ls:
+                                print("Bingo")
                                 if "x" in rs and "x" in ls:
                                     print("Type I")
                                     return "({0})^({1})*({2})".format(ls, rs, derive("ln({0})*({1})".format(ls, rs)))
@@ -76,6 +82,12 @@ def derive(exp):
                                         print("Type J")
                                         return "({0})*({1})^({2})*{3}".format(power, ls, power-1, derive(ls))
                                     except:
+                                        # Type J+ is a fractional power with no weird things going on (eg. ...^(1/3))
+                                        print("Type J+")
+                                        f_parts = list(map(int, rs[1:-1].split("/")))
+                                        f_new = f_parts[0]-f_parts[1]
+                                        return "({0}/{1})*({2})^({3}/{4})*({5})".format(f_parts[0], f_parts[1], ls,
+                                                                                        f_new, f_parts[1], derive(ls))
                                         pass
                                 # Not coded: constant to the power of function (might be already performed by line 57?)
                 if opers[i][0] == "*":
@@ -493,10 +505,11 @@ problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(
                 "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))", "sin(x)/cos(x)",
                 "sin(e^x)+cos(ln(x))"]
 problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, "B", "D10"]
-# 1 C, 2 C, 3 C, 4 C, 5 C, 8 F (underderived), 9 C, 11 C, 12 C,
-# 14 C, 15 C, 16 C, 17 F (no), 18 C, 19 C, 20 F (moderate),
+# 1 C, 2 C, 3 C, 4 C, 5 C, 8 C, 9 C, 11 C, 12 C,
+# 14 C, 15 C, 16 C, 17 C, 18 C, 19 C, 20 C,
 # 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
 for i in range(len(problems_mvp)):
+    print(problem_ids[i])
     print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
 # print("Derivative:", process("(2*sin(x)+5*x^(1/3))*(5*3^x)"))
 # print("Derivative:", process("x^3/(ln(x^2))"))
