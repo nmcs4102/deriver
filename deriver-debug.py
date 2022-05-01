@@ -139,7 +139,9 @@ def derive(exp):
         # I suspect something is wrong around here
         for k in range(len(splitted)):
             derivatives.append(derive(splitted[k][1]))
-        res = "({0}".format(derivatives[0])
+        if splitted[0][0] == "+":
+            splitted[0][0] = ""
+        res = "({0}{1}".format(splitted[0][0], derivatives[0])
         for k in range(1, len(derivatives)):
             if derivatives[k] != 0:
                 res = "{0}{1}{2}".format(res, splitted[k][0], derivatives[k])
@@ -491,12 +493,12 @@ problems_mvp = ["-5*x^8+(2/3)*x^(-2)+(1/5)*x-21", "6*x^(1/3)-3*x^(2/3)-(6/5)*x^(
                 "((2^(x^3))+5*x)^(1/2)/5", "(sin(3^(2*x^2+2))^2", "x^3/(ln(x^2))", "sin(x)/cos(x)",
                 "sin(e^x)+cos(ln(x))"]
 problem_ids = [1, 2, 3, 4, 5, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, "B", "D10"]
-# 1 C, 2 C, 3 F (- instead of +), 4 C, 5 C, 8 F (underderived), 9 C, 11 C, 12 C,
-# 14 C, 15 C, 16 F (parsing is bad), 17 F (no), 18 C, 19 C, 20 F (massive),
+# 1 C, 2 C, 3 C, 4 C, 5 C, 8 F (underderived), 9 C, 11 C, 12 C,
+# 14 C, 15 C, 16 C, 17 F (no), 18 C, 19 C, 20 F (moderate),
 # 21 C, 22  F (Anomaly) "x^2*e^(-x^2)", 23 C,   B C, D10 C
-#for i in range(len(problems_mvp)):
-    # print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
-print("Derivative:", process("(2*sin(x)+5*x^(1/3))*(5*3^x)"))
+for i in range(len(problems_mvp)):
+    print(problem_ids[i], "Derivative:", process(problems_mvp[i]))
+# print("Derivative:", process("(2*sin(x)+5*x^(1/3))*(5*3^x)"))
 # print("Derivative:", process("x^3/(ln(x^2))"))
 # print(process(input("")))
 # This baby does 12.5/18 MVP
