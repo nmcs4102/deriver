@@ -32,6 +32,7 @@ def derive(exp):
                 # print("True")
                 ls = exp[opers[i][1]:opers[i][5]]
                 rs = exp[opers[i][5]+1:opers[i][2]+1]
+                print(ls, rs)
                 # Brackets could be changed to remove redundant better (like in rewrite)
                 if len(match(exp)) == 2:
                     if ls[0] == "(" and ls[-1] == ")":
@@ -63,8 +64,8 @@ def derive(exp):
                                 print("Type F")
                                 return "e^x"
                             else:
-                                print("Type G")
-                                return "({0})*e^({1})".format(derive(rs[1:-1]), rs)
+                                print("Type G+")
+                                return "({0})*e^({1})".format(derive(rs), rs)
                     else:
                         try:
                             c = int(ls)
